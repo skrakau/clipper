@@ -18,6 +18,7 @@ import pybedtools
 import clipper
 from clipper import data_dir
 from clipper.src.call_peak import call_peaks, poissonP
+from contextlib import closing
 
 logging.captureWarnings(True)
 #logging.basicConfig(level=logging.INFO)
@@ -587,7 +588,7 @@ def main(options):
             results.append(job)   
     
     else:
-        with multiprocessing.Pool(int(options.np)) as pool:
+        with closing(multiprocessing.Pool(int(options.np))) as pool:
             jobs = [pool.apply_async(call_peaks, job) for job in tasks]
 
             for job, task in zip(jobs, tasks):
@@ -598,6 +599,7 @@ def main(options):
                 except Exception as error:
                     logging.error("gene %s error for some other reason" % (task[0].attrs['gene_id']))
                     print error
+            pool.terminate()
 
     logging.info("finished with calling peaks")
 
